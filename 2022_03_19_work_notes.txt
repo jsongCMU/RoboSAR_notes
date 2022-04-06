@@ -1,0 +1,8 @@
+Title: Multi-robot Localization Characterization
+
+- Recorded new bag files with new setup; no more walls around VICON table
+- To clean up bag file: rosbag filter vicon_baseline_no_walls.bag edit_vicon_baseline_no_walls.bag 'topic == "/robosar_agent_bringup_launch/agent1/feedback/scan" or topic == "/robosar_agent_bringup_launch/agent1/odom_data_euler" or  topic == "/tf" and m.transforms[0].header.frame_id != "map" and m.transforms[0].child_frame_id != "agent1/odom"'
+- Modify launch file for multirobot and new bag file: /home/jsonglaptop/catkin_ws/src/slam_toolbox/slam_toolbox/launch/robosar_localization_tuning.launch
+    - Set all YAML files back to default
+- Working on setup for multirobot VICON
+- Got multirobot VICON to work: robosar_multilocalization_vicon.launch

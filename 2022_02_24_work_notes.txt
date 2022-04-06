@@ -1,0 +1,17 @@
+Title: Tuned Localization Testing
+- Run VICON localization test with tuned parameters: conda deactivate; roslaunch slam_toolbox vicon_localization_test_tuned.launch
+    - Publish error: rosrun tf tf_echo vicon/k109_lrf/k109_lrf base_link 10
+    - Results were bad; around 10 cm RMS
+    - Not sure if calibrated properly; at end of run Khepera should have been at origin, but it was off by about 7 cm
+    - Noticed VICON is acting kind of flakey; not sure if it's working, or need recal, or if dots got moved. Should redo that
+        - Reinstantiated the object. Jitteriness went away, but balls aren't showing up where they're supposed to on GUI; will try again after dinner
+        - Recalibrated, then reinstantiated k109_lrf. Looks ok now. Will retry
+    - Rerunning test with tuned parameters:
+        - Looks good at first blush; 7.86 cm RMS. Running more analysis
+        - Analyzed recorded data from bag file; 7.34 cm RMS
+    - Rerunning test with default parameters; got around 10 cm RMS again
+    - Ran a couple more tests with tuned parameters; they perform worse than baseline. Also, visually, the tuned parameters look worse than default
+- I think there's some sort of error with VICON; that is, it's not a very good ground truth. When I tune toolbox to reduce VICON error, the results
+  visibly look worse. Additionally, even if ground truth is good, I can't get it to work better than baseline reliably; of the three tests, two were
+  worse. I'd say for now 10 cm RMS is good enough; use the baseline/default parameters and roll with it and see if localization needs to be improved
+  further down the line. If we do, then the tuning I've been doing can give insight on how we can improve localization in the future.

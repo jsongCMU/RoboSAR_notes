@@ -1,0 +1,10 @@
+Title: LOCALIZATION
+
+- Trying to get SLAM toolbox to be pure localization
+    - Maps are saved here: /home/jsonglaptop/.ros
+    - Seems to work if initial pose is fairly accurate
+- To generate map: conda deactivate; roslaunch slam_toolbox PR1_teleop.launch 
+- To run localization: conda deactivate; roslaunch slam_toolbox robosar_localization.launch
+- Localization testing:
+    - Rammed agent into wall; localization started to be wrong. After moving agent around in environment for a bit, localization converged to correct pose
+    - Placed new obstacles not covered in map in environment; localization was still good

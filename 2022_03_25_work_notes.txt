@@ -1,0 +1,129 @@
+Title: Trying to get Khepera onto CMU Device 2
+
+- iw dev wlan0 link: list wireless interface
+    Connected to d8:0d:17:41:74:ed (on wlan0)
+            SSID: TP-Link_74ED
+            freq: 2457
+            RX: 19715 bytes (108 packets)
+            TX: 9754 bytes (92 packets)
+            signal: -56 dBm
+            tx bitrate: 24.0 MBit/s
+
+            bss flags:      short-slot-time
+            dtim period:    1
+            beacon int:     100
+- cd /etc/systemd/network; vim wifi.network
+- cd /etc/wpa_supplicant; vim wpa_supplicant-wlan0.conf
+- Maybe works???
+    - wifi.network:
+        # Automatically bring-up default wifi interface as a wireless client.
+        # If possible, get an address using DHCP. This works in tandem with
+        # wpa_supplicant to establish a network connection.
+        # See http://www.freedesktop.org/software/systemd/man/systemd.network.html
+        [Match]
+        Name=wlan0
+
+        [Network]
+        DHCP=v4
+        #DNS=172.16.156.1
+        Address=172.26.166.19/24
+        Gateway=172.26.166.1
+        #DNS=192.168.0.1
+        #Address=192.168.0.108/24
+    - wpa_supplicant-wlan0.conf
+        # Adjust this file for your network.  See [1] for
+        # more details.
+        # [1] http://linux.die.net/man/5/wpa_supplicant.conf
+        ctrl_interface=/var/run/wpa_supplicant
+        ctrl_interface_group=0
+        update_config=1
+
+        # Connect to any open network
+        #network={
+        #    ssid="korebot"
+        #    key_mgmt=NONE
+        #}
+
+        network={
+                ssid="CMU-DEVICE"
+                proto=NONE
+                key_mgmt=NONE
+                pairwise=CCMP TKIP
+                group=CCMP TKIP
+                priority=10
+                scan_ssid=1
+        }
+- Doesn't work; list wirless interface says not connected; cannot ping or be pinged by laptop
+- Maybe works 2: The return
+    - wifi.network:
+        # Automatically bring-up default wifi interface as a wireless client.
+        # If possible, get an address using DHCP. This works in tandem with
+        # wpa_supplicant to establish a network connection.
+        # See http://www.freedesktop.org/software/systemd/man/systemd.network.html
+        [Match]
+        Name=wlan0
+
+        [Network]
+        DHCP=v4
+        Address=172.26.166.19/24
+        Gateway=172.26.166.1
+    - wpa_supplicant-wlan0.conf:
+        # Adjust this file for your network.  See [1] for
+        # more details.
+        # [1] http://linux.die.net/man/5/wpa_supplicant.conf
+        ctrl_interface=/var/run/wpa_supplicant
+        ctrl_interface_group=0
+        update_config=1
+
+        network={
+                ssid="CMU-DEVICE"
+                key_mgmt=NONE
+        }
+    - iw dev wlan0 link:
+        Connected to 34:fc:b9:6f:6d:a5 (on wlan0)
+                SSID: CMU-DEVICE
+                freq: 2412
+                RX: 3261 bytes (33 packets)
+                TX: 12371 bytes (90 packets)
+                signal: -73 dBm
+                tx bitrate: 72.2 MBit/s MCS 7 short GI
+
+                bss flags:      short-preamble short-slot-time
+                dtim period:    1
+                beacon int:     100
+    - ifconfig:
+        lo        Link encap:Local Loopback  
+                  inet addr:127.0.0.1  Mask:255.0.0.0
+                  inet6 addr: ::1/128 Scope:Host
+                  UP LOOPBACK RUNNING  MTU:65536  Metric:1
+                  RX packets:168 errors:0 dropped:0 overruns:0 frame:0
+                  TX packets:168 errors:0 dropped:0 overruns:0 carrier:0
+                  collisions:0 txqueuelen:0 
+                  RX bytes:12886 (12.5 KiB)  TX bytes:12886 (12.5 KiB)
+
+        wlan0     Link encap:Ethernet  HWaddr F0:45:DA:F0:B4:22  
+                  inet addr:172.26.166.19  Bcast:172.26.166.255  Mask:255.255.255.0
+                  inet6 addr: fe80::f245:daff:fef0:b422/64 Scope:Link
+                  UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+                  RX packets:6 errors:0 dropped:0 overruns:0 frame:0
+                  TX packets:89 errors:0 dropped:0 overruns:0 carrier:0
+                  collisions:0 txqueuelen:1000 
+                  RX bytes:994 (994.0 B)  TX bytes:12340 (12.0 KiB)
+    - ping:
+        PING 172.26.129.63 (172.26.129.63) 56(84) bytes of data.
+        64 bytes from 172.26.129.63: icmp_seq=1 ttl=64 time=13.8 ms
+        64 bytes from 172.26.129.63: icmp_seq=3 ttl=64 time=17.0 ms
+        64 bytes from 172.26.129.63: icmp_seq=4 ttl=64 time=5.64 ms
+        64 bytes from 172.26.129.63: icmp_seq=5 ttl=64 time=5.49 ms
+        ^C
+        --- 172.26.129.63 ping statistics ---
+        5 packets transmitted, 4 received, 20% packet loss, time 4010ms
+        rtt min/avg/max/mdev = 5.493/10.513/17.090/5.078 ms
+- After power cycling robot, I can ping and be pinged on CMU-DEVICE!
+- Can't ssh into it; asking for password. Tried usual (just hitting enter, or with a single space, or passwd) but it doesn't work
+- Alex (Team A) suggested putting robot on CMU-DEVICE, then laptop on CMU-SECURE. Will try that.
+    - When on separate networks, cannot ping back and forth :(
+- Configure for TPLINK:
+    cd /etc/systemd/network; cp wifi_TPLINK.network~ wifi.network; cd /etc/wpa_supplicant; cp wpa_supplicant-wlan0_TPLINK.conf~ wpa_supplicant-wlan0.conf; reboot
+- Configure for CMU-DEVICE:
+    cd /etc/systemd/network; cp wifi_DEVICE.network~ wifi.network; cd /etc/wpa_supplicant; cp wpa_supplicant-wlan0_DEVICE.conf~ wpa_supplicant-wlan0.conf; reboot

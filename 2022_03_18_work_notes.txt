@@ -1,0 +1,18 @@
+Title: Multi-localization implementation 2
+
+- Need to fix odom_node.hpp and odom_node.cpp to remove coupling discovered yesterday
+    - Will turn odom_node into class. This will make each agent contain its own instance of odom_node, avoiding crosstalk
+    - Turned odom_node into class. Running test with just agent_bringup, teleop and RVIZ confirmed that system can now differentiate odom from different agents
+    - Testing on multiple slam_toolboxes now
+    * Got it working! Can localize two agents simultaneously. Need to see how well it works though, and what the CPU load is
+- Played with VICON again. Saw that it was jittery and unreliable. Did little digging, and saw it was jittery when near the edges of VICON area
+    - Realized issue may be occlusion; have boards set up near edges of VICON area to stop LRF beam, but this also blocks VICON's view of agents near edges of operational area
+    - Removed walls and recalibrated VICON; performance seems to be better. Should redo some testing with new setup and see if/how performance changes
+    - Discovered new, better way to set world origin. Rather than using magic wand, can use three markers (120 for bigger ones) to set origin, x-axis (primary) and y-axis (secondary)
+
+Title: LRF Adaptor
+- On LRF module, LIDAR is almost exactly 2.5 cm off the top of the Khepera
+- Use MDF and standoffs to achieve same configuration:
+    - 1/4in MDF, qty. 1: https://www.amazon.com/Bright-Creations-Board-Inches-Pack/dp/B07R32SPKV/ref=sr_1_6?crid=1AAXBC4RUFWG2&keywords=MDF&qid=1647651582&sprefix=mdf%2Caps%2C275&sr=8-6
+    - M3, M-F,18.5mm standoffs, qty. 25: https://www.digikey.com/en/products/detail/essentra-components/CBMFTS295A/4104506?s=N4IgjCBcoEwJxVAYygMwIYBsDOBTANCAPZQDaIAzAOxgAsADAKwgC6hADgC5QgDKnAJwCWAOwDmIAL6EqtCNBApIGHAWJlKMMAA4YrDt0h9BoidPAA2KtsSK0WPIRKRycnfQhsQXHv2HipQh0KBAUlFUd1F0oqehD6fW9DY38zILhtUOR7VScNBK8fIz9TQJAAWj0wqEEAVzVncmYWSXMq8mxOdBEAEyJUVFZJIA
+    - M3, 1 cm screws, qty. 25: https://www.digikey.com/en/products/detail/apm-hexseal/RM3X10MM-2701/3712296

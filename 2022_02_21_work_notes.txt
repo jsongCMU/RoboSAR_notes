@@ -1,0 +1,57 @@
+Title: Localization improvement research
+
+- Ideas for improving localization
+    - Potential params to tune in SLAM Toolbox:
+        - resolution - Resolution of the 2D occupancy map to generate
+            - not sure if it'll matter; I don't think SLAM toolbox uses occupancy map; it uses pose-graph
+        - Pretty much anything under Matcher Params
+            - minimum_travel_distance - Minimum distance of travel before processing a new scan
+            - minimum_travel_heading - Minimum changing in heading to justify an update
+            - scan_buffer_size - The number of scans to buffer into a chain, also used as the number of scans in the circular buffer of localization mode
+            - scan_buffer_maximum_scan_distance - Maximum distance of a scan from the pose before removing the scan from the buffer
+            - link_match_minimum_response_fine - The threshold link matching algorithm response for fine resolution to pass
+            - link_scan_maximum_distance - Maximum distance between linked scans to be valid
+            - loop_search_maximum_distance - Maximum threshold of distance for scans to be considered for loop closure
+            - distance_variance_penalty - A penalty to apply to a matched scan as it differs from the odometric pose
+            - angle_variance_penalty - A penalty to apply to a matched scan as it differs from the odometric pose
+            - fine_search_angle_offset - Range of angles to test for fine scan matching
+            - coarse_search_angle_offset - Range of angles to test for coarse scan matching
+            - coarse_angle_resolution - Resolution of angles over the Offset range to test in scan matching
+            - minimum_angle_penalty - Smallest penalty an angle can have to ensure the size doesn't blow up
+            - minimum_distance_penalty - Smallest penalty a scan can have to ensure the size doesn't blow up
+        - Steve - "You would try reducing the penalties on changes in orientation and/or position so that if things appear to be a bit off, you're more likely to let it correct there vs try to modify. Something else to aid could be increasing the search space (within reason) but making the scan correlation parameters more strict. That could help let you search more space if you get off a bit from odometry but require a higher burden of proof that there's a quality match. As I mention above, really, this is a niche technique if you read it. There's no MCL backend in this to help filter out individual bad poses. For applications I built it for, that was OK because even if the map deformed a little bit, that was fine for the type of autonomy we were using. I also found that if you just had great odometry, it was a non-issue because you didn't regularly have problems of deformations. This, however, might not be suitable for all applications. Things like AMCL that have a particle filter back end are still going to be more robust to arbitrary perturbations and noise."
+        "Pushing this discussion into #334 where we're making some headway of root cause."
+        "@cblesing @jjbecomespheh Try turning off loop closures in localization mode, that might just fix your issue immediately."
+    - Merge IMU and odometry
+        - robot_localization seems popular
+            - Tutorial: https://github.com/methylDragon/ros-sensor-fusion-tutorial/blob/master/01%20-%20ROS%20and%20Sensor%20Fusion%20Tutorial.md
+            - Image: https://github.com/methylDragon/ros-sensor-fusion-tutorial/blob/master/assets/1_5.png
+                - Looks like here they use output of AMCL/gmapping etc. as input to EKF, in parallel with using EKF on odom/IMU etc., which has its own EKF
+                - For RoboSAR, maybe use EKF to fuse odom and IMU then feed that to SLAM Toolbox? Should I use SLAM Toolbox output and feed that to EKF?
+            - Neel says robot_localization is rabbithole; a lot of work, no guarantee of good performance. Since we always have controlled env, slip isn't a real concern
+            - May need transforms for sensors
+            - IMU axis:
+                "An IMU that is placed in its neutral right-side-upposition on a flat surface will:
+                Measure **+**9.81 meters per second squared for the Z axis.
+                If the sensor is rolled **+**90 degrees (left side up), the acceleration should be **+**9.81 meters per second squared for the Y axis.
+                If the sensor is pitched **+**90 degrees (front side down), it should read **-**9.81 meters per second squared for the X axis."
+    - Could try to merge odoemtry with scan matching. Though I think SLAM Toolbox may do that in some way already, so may be redundant?
+
+Title: Tuning and Testing
+- Have rosbag of two tests; can reuse data from them to see how changing parameters changes performance
+    - Rosbag
+        - General notes:
+            - Use sim time: <param name="/use_sim_time" value="true"/>
+            - Playback speed: rosbag play recorded1.bag -r 4
+            - Specify topics: rosbag play recorded1.bag --topics /topic1 /topic2 /topic3
+            - Start paused: rosbag play --pause recorded1.bag
+            - Publish clock: rosbag play --clock recorded1.bag
+            - Change publish rate: rosbag play -r 10 recorded1.bag
+        - To play bag fast with clock and sim time: rosparam set /use_sim_time true; rosbag play edit_vicon_localization_test_1.bag --clock -r 10
+        - Filtering: rosbag filter input.bag output.bag 'topic == "/camera/image_raw/compressed" or topic == "/scan" or topic == "/timetag" or  topic == "/tf" and m.transforms[0].header.frame_id != "/odom" and m.transforms[0].child_frame_id != "/odom"'
+    - If I playback data at 10x speed, then data gets weird; suspect queue gets full then data packets start getting dropped. Think x4 is fastest I can do
+    - Get transform between two frames: rosrun tf tf_echo vicon/k109_lrf/k109_lrf base_link 10
+        - I don't think this is deterministic; running this multiple times with same bag file produces different results
+        - Differences seem small enough to not be a problem; key performance metrics are nearly identical
+    - Modifying recording for testing: rosbag filter vicon_localization_test_1.bag edit_vicon_localization_test_1.bag 'topic == "/robosar_agent_bringup_launch/agent1/feedback/scan" or topic == "/robosar_agent_bringup_launch/agent1/odom_data_euler" or topic == "/robosar_agent_bringup_launch/agent1/odom_data_quat" or topic == "/trajectory" or  topic == "/tf" and m.transforms[0].header.frame_id != "map" and m.transforms[0].child_frame_id != "odom"'
+    - To check tf: rosrun rqt_tf_tree rqt_tf_tree

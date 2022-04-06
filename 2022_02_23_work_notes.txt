@@ -1,0 +1,6 @@
+Title: SLAM Toolbox Resource Test
+
+- Command to get RAM and CPU usage: top -d 0.1
+- Run top command while doing SLAM and localization; save results to txt file
+- SLAM uses 17% of CPU on average, gets near 300% at times
+- Localization uses 14% of CPU on average, gets over 300% at times

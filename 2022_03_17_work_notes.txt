@@ -1,0 +1,12 @@
+Title: Multi-localization implementation
+
+- Tried using tf_prefix; didn't work. If I broadcast with one tf_prefix, and read with another tf_prefix, it still works. This means tf_prefix cannot be used to discriminate between agents
+- Decided to prepend tf with agent id: "base_link" -> "agent1/base_link", "odom" -> "agent1/odom", etc.
+- robosar_multilocalization_1.launch: converted to use argument, defaults to "agent1"
+- robosar_multilocalization_2.launch: set up to use "agent1" and "agent2"; no teleop
+    - Discovered that there's some sort of coupling between agents; using teleop to turn agent1 results in both agents turning for some reason, though agent2 is stationary
+    - Checked TF; looks correct; nothing broadcasting from agent1 to agent2
+    - Checked namespaces; looks good, both slam toolboxes are doing their own thing
+    - Temporarily commented out slam toolboxes; set agent1/odom and agent2/odom to be identical. Now launch file visualizes pure odometry data
+        - Coupling still occurs. This suggests coupling occurs in agent bringup code
+        - Discovered issue: odom_node.hpp and odom_node.cpp use global variables. agent1 uses/sets these global variables, then agent2 also uses/sets the same variables. This is where coupling occurs

@@ -1,0 +1,75 @@
+Title: LOCALIZATION TUNING
+- Process
+    1. Convert bag file to remove SLAM outputs and keep sensor data:
+        rosbag filter vicon_localization_test_1.bag edit_vicon_localization_test_1.bag 'topic == "/robosar_agent_bringup_launch/agent1/feedback/scan" or topic == "/robosar_agent_bringup_launch/agent1/odom_data_euler" or topic == "/robosar_agent_bringup_launch/agent1/odom_data_quat" or topic == "/trajectory" or  topic == "/tf" and m.transforms[0].header.frame_id != "map" and m.transforms[0].child_frame_id != "odom"'
+    2. Make sure launch file is pointing to right bag file:
+        /home/jsonglaptop/catkin_ws/src/slam_toolbox/slam_toolbox/launch/robosar_localization_tuning.launch
+    3. Run launch file and save output to text file:
+        roslaunch slam_toolbox robosar_localization_tuning.launch > output.txt
+    4. Make sure parser is pointing to right input and output:
+        /home/jsonglaptop/Desktop/CMU/RoboSAR/Test_Data/tf_data_parser.py
+    5. Run parser:
+        python3 tf_data_parser.py
+    6. Use parser output to characterize performance (mean, RMS, max, plot, etc.)
+- Tuning
+    - Baseline has 9.75 cm RMS error
+    - Tried turning off loop closure
+        - negligible change in performance
+        - restored to default
+    - Tried halving distance_variance_penalty and angle_variance_penalty (0.25, 0.5, resp)
+        - Improved performance, 8.98 cm RMS
+        - Tried halving again (0.125, 0.25)
+            - Improved performance, 8.17 cm RMS
+        - Tried reducing again (0.05, 0.1)
+            - Improved performance, 7.71 cm RMS
+        - Restored to default
+    - Tried halving minimum_travel_distance (0.25)
+        - Improved performance, 9.33 cm RMS
+        - Tried reducing to 0.1
+            - Improved performance, 9.27 cm RMS
+        - Tried halving minimum_travel_heading (0.25)
+            - Not much change in performance, 9.28 cm RMS
+        - Restored to default
+    - Tried increasing scan_buffer_size from 3 to 10
+        - Improved performance, 9.49 cm RMS
+        - Tried increasing to 20
+            - Worsened performance, 9.89 cm RMS
+        - Restored to default
+    - Tried increasing fine_search_angle_offset, coarse_search_angle_offset, coarse_angle_resolution to 0.01, 1, 0.1
+        - Not much change in performance, 9.80 cm RMS
+        - Resotred coarse_angle_resolution to 0.0349
+            - Worsened performance, 9.89 cm RMS
+        - Restored to default
+    - Tried halving minimum_angle_penalty, minimum_distance_penalty (0.45, 0.25)
+        - Not much change in performance, 9.80 cm RMS
+        - Tried quadrupling them (1.8, 1.0)
+            - Worsened performance, 9.87 cm RMS
+        - Restored to default
+    - Tried setting use_scan_barycenter to false
+        - Improved performance, 9.20 cm RMS
+        - Restored to default
+    - Tried raising link_match_minimum_response_fine and link_scan_maximum_distance from (0.1,1.5) to (0.3, 3.0)
+        - Improved performance, 8.68 cm RMS
+        - Tried raising link_match_minimum_response_fine to 0.5
+            - Worsened performance, 9.14 cm RMS
+        - Tried lowering link_match_minimum_response_fine to 0.4
+            - Worsened performance, 9.05 cm RMS
+        - Tried lowering link_match_minimum_response_fine to 0.2
+            - Worsened performance, 9.06 cm RMS
+        - Set link_match_minimum_response_fine to 0.3; tried raising link_scan_maximum_distance to 5.0
+            - Worsened performance, 10.49 cm RMS
+        - Set link_match_minimum_response_fine to 0.5
+            - Worsened performance, 10.36 cm RMS
+        - Restored to default
+    - Try combining multiple things:
+            - Settings:
+                - distance_variance_penalty, angle_variance_penalty = 0.05, 0.1
+                - minimum_travel_distance = 0.25
+                - scan_buffer_size = 10
+                - use_scan_barycenter = false
+                - link_match_minimum_response_fine, link_scan_maximum_distance = 0.3, 3.0
+            - Improved performance, 7.54 cm RMS
+            - Generated a more detailed map using: roslaunch slam_toolbox PR1_teleop.launch; let's see if that makes a difference (map_file_name: localization_map_vicon_detailed, resolution: 0.01)
+            - Significantly improved performance, 5.23 cm RMS
+                - Though results are great, I don't want to rely on this yet; configured settings to use usual map, not detailed map
+

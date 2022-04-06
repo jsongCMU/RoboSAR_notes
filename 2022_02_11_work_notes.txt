@@ -1,0 +1,13 @@
+Title: HACKATHON!!! (1)
+
+- ROS packages:
+    - robosar_khepera_code: code to put on Khepera
+    - robosar_agent_bringup: script to program all Kheperas
+- To run agent bringup: rosrun robosar_agent_bringup robosar_agent_bringup_node
+...
+- Got SLAM and navigation working. To do this, run all three:
+    - roslaunch robosar_agent_bringup robosar_agent_bringup_node.launch
+    - roslaunch slam_toolbox hackathon.launch
+    - roslaunch robosar_navigation move_base.launch
+- To use teleop: rosrun teleop_twist_keyboard teleop_twist_keyboard.py cmd_vel:=/robosar_agent_bringup_launch/agent1/control
+- To save map: rosrun map_server map_saver -f mapfilename

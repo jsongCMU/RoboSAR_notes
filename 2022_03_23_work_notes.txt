@@ -1,0 +1,56 @@
+Title: Trying to get Khepera onto CMU Device
+
+- Hook up Khepera to computer over USB, then use minicom: minicom -D /dev/ttyUSB0
+- Password: root
+- ifconfig when connected to TPLINK:
+root@khepera4_1290:~# ifconfig
+lo        Link encap:Local Loopback  
+          inet addr:127.0.0.1  Mask:255.0.0.0
+          inet6 addr: ::1/128 Scope:Host
+          UP LOOPBACK RUNNING  MTU:65536  Metric:1
+          RX packets:166 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:166 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0 
+          RX bytes:12706 (12.4 KiB)  TX bytes:12706 (12.4 KiB)
+
+wlan0     Link encap:Ethernet  HWaddr F0:45:DA:F0:B4:22  
+          inet addr:192.168.0.108  Bcast:192.168.0.255  Mask:255.255.255.0
+          inet6 addr: fe80::f245:daff:fef0:b422/64 Scope:Link
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:100 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:96 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000 
+          RX bytes:17012 (16.6 KiB)  TX bytes:12190 (11.9 KiB)
+- Trying to get it to work on my hotspot:
+    - /etc/systemd/network/wifi.network:
+        # Automatically bring-up default wifi interface as a wireless client.
+        # If possible, get an address using DHCP. This works in tandem with
+        # wpa_supplicant to establish a network connection.
+        # See http://www.freedesktop.org/software/systemd/man/systemd.network.html
+        [Match]
+        Name=wlan0
+
+        [Network]
+        DHCP=v4
+        DNS=192.168.145.196
+    - /etc/wpa_supplicant/wpa_supplicant-wlan0.conf:
+        # Adjust this file for your network.  See [1] for
+        # more details.
+        # [1] http://linux.die.net/man/5/wpa_supplicant.conf
+        ctrl_interface=/var/run/wpa_supplicant
+        ctrl_interface_group=0
+        update_config=1
+
+        # Connect to any open network
+        #network={
+        #    ssid="korebot"
+        #    key_mgmt=NONE
+        #}
+
+        network={
+                ssid="Hot_Jae"
+                scan_ssid=1
+                key_mgmt=NONE
+        }
+- Not sure if it works with CMU-DEVICE; looks like I'm getting a IPv6 address
+

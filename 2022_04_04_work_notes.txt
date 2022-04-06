@@ -1,0 +1,118 @@
+Title: SLAM testing in Scott Hall
+
+- Did some testing with .108 in Scott Hall using RoboSAR router (shitty one; range of ~14 m)
+    - Results are BAD
+        - Sometimes, near start of test, map (scott_test_PR4) gets screwed up; moves room outside machine shop to room where we start in
+            - Seems like this doen't happen if I sit where I sat during mapping; my fat ass may have become a critical landmark
+            - Still, not sure why localization mode is messing with the underlying map to such a HUGE extent...
+        - Localization occasionally gets super screwed up; jumps agent1 from roughly correct location to completely wrong place
+            - Problem seems to occur for two reasons. First, nearly all angles are right angles; I guess slam_toolbox can't
+              tell them apart, so it makes (very, VERY) wrong corrections. Second, sometimes the LIDAR only picks up generic
+              data; for example, the only thing it picks up is a single long wall. This can correspond to nearly anywhere
+              along the wall
+    - Recorded a bunch of bag files
+        - bad_start1.bag, bad_start2.bag, bad_start.bag: map gets screwed up near start of run
+        - test1.bag: 
+            - map gets screwed up 13 secs in; corrects at 38 secs
+            - map gets screwed up at 135 sec; localization fails hard after that
+            - loczliation corrects at end for photo finish; no obvious huge jumps
+        - test2.bag:
+            - Pretty good at start
+            - Jumps and map fails at 70 sec; mostly corrects at 95 sec
+            - Nearly very good at end with good correction at 175, but then jumps at 191 sec; fails at very end
+        - test3.bag:
+            - Map gets screwed up at 16 sec
+            - Map fixed but pose wrong at 37 sec
+            - Pose correct (?) at 57 sec
+            - Jump at 135 sec
+            - Incomplete correction at 171 sec
+            - Pose correct at 216 sec and at end of run
+        - test4.bag:
+            - Map gets slightly screwed up at 71 sec; pose wrong
+            - Jump, and map gets very screwed up at 105 sec
+            - Pose correction at 115 sec; map still looks messed up though
+            - Map gets more screwed up at 125 sec; pose very wrong
+            - Incomplete correction at 175 sec; pose wrong at end
+        - test5.bag:
+            - Pretty good run; very short though
+        - test6.bag:
+            - Jump at 46 sec; pose wrong until end
+- Notes for testing:
+    - rviz -d scott_testing.rviz: load specified rviz file
+    - rosbag play test2.bag -r 4: play at x4 speed
+    - rosbag play test2.bag -s 180: play from specified time
+    - press space during bag play to pause
+- Edit rosbag to remove slam_toolbox output:
+    - rosbag filter raw/test1.bag edited/test1.bag 'topic == "/robosar_agent_bringup_launch/agent1/feedback/scan" or topic == "/robosar_agent_bringup_launch/agent1/odom_data_euler" or  topic == "/tf" and m.transforms[0].header.frame_id != "map" and m.transforms[0].child_frame_id != "agent1/odom"'
+    - Located here: /home/jsonglaptop/catkin_ws/bags/scott_hall/edited
+- To run slam_toolbox on edited rosbags:
+    - Relevant files:
+        - robosar_scott_localization_tuning.yaml
+        - robosar_scott_localization_tuning.launch
+        - scott_bag_playback.rviz
+    - roslaunch slam_toolbox robosar_scott_localization_tuning.launch
+- Unfortunately, running slam_toolbox on bag does not yield identical results
+    - test1.bag
+        - Pose correction occurs at 57 sec
+        - Incomplete correction occurs at 106 sec
+        - Jump occurs at 124 sec; pose very wrong
+        - Pose corrects at 165 sec
+    - test2.bag
+        - Map gets screwed up at 62 sec
+        - Jump at 90 sec
+        - Another jump at 106 sec
+        - Another jump at 139 sec
+        - Another jump at 191 sec
+    - test3.bag
+        - Map screwed up from start
+        - Map corrects at 36 sec
+        - Pose corrected at 57 sec
+        - Map and pose wrecked at 152 sec
+    - test4.bag
+        - Jump at 35 sec
+        - Map wrecked at 98 sec
+        - Pose correct at 173 sec
+    - test5.bag
+        - Pretty good
+    - test6.bag
+        - Map and pose bad at 28 sec
+        - Map fixed around 54 sec
+- Discovered changing playback speed causes slam_toolbox to behave 
+  differently. Sad.
+  - test1.bag: screwed up at start
+  - test2.bag
+    - jump and map wrecked at 60 sec
+    - jump at 87 sec
+    - jump (?) at 104 sec
+    - Really bad beyond that
+  - test3.bag: screwed up at start
+  - test4.bag: nothing goes wrong for around first 70 sec or so
+  - test5.bag: all good
+  - test6.bag: 
+    - map gets screwed up at 27 sec
+    - jump at 42 sec
+    - incomplete correction at 105 sec
+- Even at x1 playspeed, performance is not repeatable. MAD!!!
+- Decided to do x4 speed with test4.bag; seems to cause jump reliably (4/5 times)
+- Params to play with:
+    - scan_buffer_size - The number of scans to buffer into a chain, also used as the number of scans in the circular buffer of localization mode
+    - link_match_minimum_response_fine - The threshold link matching algorithm response for fine resolution to pass
+    - link_scan_maximum_distance - Maximum distance between linked scans to be valid
+    - loop_search_maximum_distance - Maximum threshold of distance for scans to be considered for loop closure
+    - do_loop_closing - Whether to do loop closure (if you're not sure, the answer is "true")
+    - correlation_search_space_dimension - Search grid size to do scan correlation over
+    - correlation_search_space_resolution - Search grid resolution to do scan correlation over
+    - loop_search_space_dimension - Size of the search grid over the loop closure algorith
+    - loop_search_space_resolution - Search grid resolution to do loop closure over
+    - distance_variance_penalty - A penalty to apply to a matched scan as it differs from the odometric pose
+    - angle_variance_penalty - A penalty to apply to a matched scan as it differs from the odometric pose
+    - fine_search_angle_offset - Range of angles to test for fine scan matching
+    - coarse_search_angle_offset - Range of angles to test for coarse scan matching
+    - coarse_angle_resolution - Resolution of angles over the Offset range to test in scan matching
+    - minimum_angle_penalty - Smallest penalty an angle can have to ensure the size doesn't blow up
+    - minimum_distance_penalty - Smallest penalty a scan can have to ensure the size doesn't blow up
+    - use_response_expansion - Whether to automatically increase the search grid size if no viable match is found
+- Tuning; params at default unless specified otherwise
+    - do_loop_closing = false
+        - got rid of jumping, and map getting screwed up. Results aren't perfect, though; error accumulates over time and doesn't get corrected
+        - May need to set stricter matching params; matching must be done close to robot, and matching must be very accurate

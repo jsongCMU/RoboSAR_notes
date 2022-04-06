@@ -1,0 +1,8 @@
+Title: CMU-DEVICE WiFi setup try again!!!
+
+- See if I can connect to CMU-SECURE. Seems promising: https://gist.github.com/aspyct/994b603aaefe5996ca331f107d6abb67
+    - Potentially useful: wpa_supplicant -i wlan0 -c ./wpa_supplicant.conf
+- Can SSH over CMU-SECURE!
+    - Wrote some scripts, config and network files here: CMU/RoboSAR/Khepera/wifi_config
+    - To transfer, execute following while one above directory: scp -r wifi_config root@192.168.0.110:/home/root
+    - Make sure to update IP addresses in wifi_TPLINK.network

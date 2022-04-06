@@ -1,0 +1,71 @@
+Title: Setting up new Khepera
+
+- Opened two new Kheperas yesterday; put labels on them saying 192.168.0.111 and 192.168.0.112. Need to set them up
+- Connect to 192.168.0.111 via USB; use minicom -s to establish communication
+- Setting up to connect to WiFi:
+    - For reference: 
+        - Default wifi.network: 
+            # Automatically bring-up default wifi interface as a wireless client.
+            # If possible, get an address using DHCP. This works in tandem with
+            # wpa_supplicant to establish a network connection.
+            # See http://www.freedesktop.org/software/systemd/man/systemd.network.html
+            [Match]
+            Name=wlan0
+
+            [Network]
+            #DHCP=v4
+            DNS=172.16.156.1
+            Address=172.16.156.56/24
+            Gateway=172.16.156.1
+        - Default wpa_supplicant-wlan0.conf:
+            # Adjust this file for your network.  See [1] for
+            # more details.
+            # [1] http://linux.die.net/man/5/wpa_supplicant.conf
+            ctrl_interface=/var/run/wpa_supplicant
+            ctrl_interface_group=0
+            update_config=1
+
+            # Connect to any open network
+            network={
+                ssid="korebot"
+                key_mgmt=NONE
+            }
+
+
+            #network={
+            ##      ssid="add-your-ascii-ssid"
+            ##      proto=WPA2
+            ##      key_mgmt=WPA-PSK
+            ##      pairwise=CCMP TKIP
+            ##      group=CCMP TKIP
+            ##      scan_ssid=1
+            ##      psk="add-your-ascii-passphrase"
+            ##      priority=10
+    - Get MAC address using ifconfig, called Hwaddr
+    - Register to CMU-DEVICE: https://www.cmu.edu/computing/services/endpoint/network-access/wireless/how-to/cmudevice.html
+    - Update wifi.network with ip given by CMU-DEVICE:
+        [Match]
+        Name=wlan0
+
+        [Network]
+        DHCP=v4
+        Address=172.26.166.38/24
+        Gateway=172.26.166.1
+    - Update wpa_supplicant-wlan0.conf for CMU-DEVICE:
+        ctrl_interface=/var/run/wpa_supplicant
+        ctrl_interface_group=0
+        update_config=1
+
+        network={
+                ssid="CMU-DEVICE"
+                key_mgmt=NONE
+        }
+    - Do reboot; see if you can ping back and forth
+    - Can ping. Still can't SSH though :(
+    - Tried: sshd -p; looks like sshd is isntalled
+
+Title: Art Gallery Task Generation
+
+- Got polygon generation working
+- Looking into merging polygons. Found potentially useful repo:
+    https://github.com/greginvm/pyclipper

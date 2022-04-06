@@ -1,0 +1,48 @@
+Title: LIDAR testing
+
+- Got minicom working by:
+    1. Granting permission: sudo adduser $USER dialout; then restart computer
+    2. Add -D flag to command: minicom -D /dev/ttyACM0
+- Connected to LIDAR puck over usb serial, /dev/ttyACM0; 115200 8N1
+    - Sent: SCIP2.0; received: SCIP2.0 0Ee
+    - Sent: MD0044072501101
+        - MD-0044-0725-01-1-01
+            - MD: 3 character encoding
+            - 0044, 0725: starting and ending step
+            - 01: cluster count
+            - 1: scan interval
+            - 01: number of scans
+        - Received response; not really sure how to interpret it
+    - Sent: MD0044072500001
+        - Received response; not really sure how to interpret it
+    - Sent: MD0044072501100
+        - Continuous data stream; can't make sense of it though
+- Found ROS guide for LIDAR puck: http://wiki.ros.org/hokuyo_node/Tutorials/UsingTheHokuyoNode
+    - Modified permissions for ttyACM0: sudo chmod a+rw /dev/ttyACM0
+- Looks like guide wasn't made for noetic. Looked around a bit; found another one: http://wiki.ros.org/urg_node
+    - sudo apt-get install ros-noetic-urg-node
+    - rosrun urg_node getID /dev/ttyACM0
+        - Result: Device at /dev/ttyACM0 has ID H1312832
+    - Not much info after that. Found another website: https://sourceforge.net/p/urgnetwork/wiki/ROS_en/
+    - rosrun urg_node urg_node _serial_port:=/dev/ttyACM0
+        - Connected successfully; streaming data
+        - New topics:
+            /diagnostics
+            /laser_status
+            /scan
+            /urg_node/parameter_descriptions
+            /urg_node/parameter_updates
+    - rosrun rviz rviz
+        - Change "Global Options->Fixed Frame" to "/laser".
+        - Add "LaserScan".
+        - Change "LaserScan->Topic" to "/scan".
+    - rviz seems to have a hard time picking up an unpowered LIDAR puck, probably due to its small size
+    - While running RVIZ with one puck, hooked up another puck and connected to it over minicom
+        - minicom -D /dev/ttyACM1
+        - Set it to scan constantly: MD0044072501100
+        - No noticeable change in RVIZ when puck was set to scan constantly
+        - No noticeable change in RVIZ when puck was disconnected, killing power
+- LIDAR looks like it generates about 20 kB of data per scan. 10 scans per second gives 200 kB per second. 10 robots gives 2 MB per second
+    - Data transmission can be significantly decreased by grouping, or downsampling. So instead of getting, say, 100 readings, only get 10 readings
+- Installed scan_tools for laser_scan_matcher: apt-get install ros-noetic-scan-tools
+

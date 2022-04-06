@@ -1,0 +1,69 @@
+Title: Khepera cross-compiler, programming
+
+- Summary:
+    - Got cross-compiler to work
+    - Verified new programs can be run on Khepera
+    - Verified Khepera can read sensors and output to its terminal
+    - K4_Send_Cmd_P3.py can now send commands and receive sensor data from Khepera
+
+- Note: Khepera IP = 192.168.0.109
+- Changed wifi to TP-Link_74ED
+- /home/jsonglaptop/khepera4_development/libkhepera-2.1/template
+    - Copied template
+    - Modified prog-template.c to print "Hello world"
+    - Ran Make in terminal; got new template file
+    - Changed template file name to hw_template
+    - Sent new template over SCP: "scp hw_template root@192.168.0.109:/home/root"
+- Access Khepera
+    - SSH into Khepera: ssh root@192.168.0.109
+    - ./hw_template
+        * Successfully printed "Hello world!"; cross-compiler works!
+- Modify template in WV script
+    - uncomment printing of W and V
+    - Run Make; generate new template
+    - SCP and run script
+    - ROS
+        - Run roscore, K4_Send_Cmd_P3.py, Central_Algorithm_Template_Without_Vicon_Input.py
+    * Khepera successfully prints Input W and Input V repeatedly; can change and reprogram template!
+    - Can't CTRL-C out of ./template; strange
+    - Re-commented out printing Input W and Input V
+- Modified template to print accelerometer data to terminal
+    - SCP, run script
+    - Run roscore, K4_Send_Cmd_P3.py, Central_Algorithm_Template_Without_Vicon_Input.py
+    * Successfully print accelerometer data to terminal!
+    - Successfully CTRL-C out this time; stranger
+    - Undid changes to template to print accelerometer data
+- Try to get all sensor reading over UDP
+    - K4_Send_Cmd_P3.py
+        - Add serverSock.recv(4096); print received data
+    - prog-template.c
+        - Uncomment UDPsendSensor; uncomment other code as necessary to run function
+    - Python script seems to get stuck on serverSock.recv; will try adding timeout
+        - Timeout causes exception; added try/except to keep code from crashing
+    - template claims to be sending data over UDP, and K4_Send_Cmd_P3.py claims nothing was received.
+    - Tried changing IP address here: "if(inet_pton(AF_INET, "192.168.0.103", &(*servaddr).sin_addr)<=0)"
+        - Didn't work.
+        - How does Khepera know where to send info to?
+    * Updated PORT in prog-template.c to 2109; can get info from Khepera on Python!!!
+    - Changed format to make message easier for human to read. Example output from K4_Send_Cmd_P3.py:
+        - Note: Data is Time, Accel, Gyro; encoder Position, encoder Speed; Ultrasonic, Infrared
+        *** FROM TERMINAL ***
+        [INFO] [1636234642.283650]: ctrl_W: 0.0
+        ctrl_V: 0.0
+
+        Response:
+        T402.5417T
+        AX0.0156AX AY-0.0120AY AZ0.9352AZ
+        GX-1.4916GX GY4.7850GY GZ-0.5016GZ
+
+        PL-18PL PR-53PR
+        SL0SL SR0SR
+
+        UA25UA UB60UB UC69UC UD91UD UE187UE
+        IA14IA IB25IB IC11IC ID1022ID
+        IE5IE IF4IF IG7IG IH4IH
+        II965II IJ956IJ IK956IK IL946IL
+        *** END FROM TERMINAL ***
+
+
+

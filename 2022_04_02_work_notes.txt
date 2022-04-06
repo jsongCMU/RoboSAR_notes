@@ -1,0 +1,21 @@
+Title: Real life testing
+
+- Did testing with Kheperas in real world!
+    - Did testing in FRC. Khepera gets stuck every other second. Problem turns out to
+      be caster wheels; caster wheels are at same height as wheels. If anything, no matter
+      how small, gets under the caster wheels, then the wheels are lifted off the ground,
+      preventing motion. Really bad design :(
+      - Increasing speed of the Kheperas helps this issue somewhat
+    - Did testing in Wean hall using agent1 (.108). Mapping was really hard. Realized
+      issue was network; on CMU-DEVICE, we keep losing packets, which means we lose
+      odom and laser-scan data, which prevents SLAM_TOOLBOX from working properly
+    - Set up new WiFi router given to us by Yi Sha; it works well but its range is
+      very bad. During testing, lost connectivity to agent when it was about 14
+      meters away
+- We have mechanical and network issues, then
+    - Mechanical: Will ask to open up Khepera and see if we can improve the 
+      mechanical design in anyway. Rachel suggested putting on thicker rubber; 
+      this will allow caster wheels to get lifted slightly without losing all 
+      our traction.
+    - Network: get new router with bigger range. Hopefully setting up yet another
+      router won't be too hard :(

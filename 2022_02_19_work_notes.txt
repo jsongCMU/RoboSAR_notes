@@ -1,0 +1,36 @@
+Title: VICON
+
+- Getting VICON running on PC
+    - Log in (UN/PW: ViconMamacita / mamacita)
+    - Power on VICON (power strip)
+    - Open VICON software (Vicon Tracker 3.9.0 x64)
+    - VICON live stream may be paused; click in 3D view area and hit spacebar to unpause
+    - Calibrate VICON
+        - Go to calibrate tab
+        - Click calibrate cameras > start
+        - Turn on magic wand and wave it around in VICON area until all cameras turn solid purple
+    - Set origin
+        - Go to calibrate tab
+        - Click set volume origin > start
+        - Put magic wand where you want origin (handle is +y axis, left LED is +x axis)
+        - Click set origin
+    - Select object to track (only tracked obj have data published)
+        - Go to objects tab
+        - Check / uncheck objects as desired
+        - To create new object:
+            - Put object with tags in VICON area; axes for new obj are automatically aligned with VICON axis
+            - Click tags in VICON GUI
+            - At bottom left of screen, there's Create Object; give obj name then click create
+    - To visualize data:
+        - May need to select obj to view under objects tab if not already selected (should be highlighted green)
+        - Click on views (right below View Type near top of screen) and click Graph
+        - Next to Graph, in list select Objects > Global Angle
+        - Next to Global Angle, click "scale the graph to fit the vertical range of data" button
+- Reading VICON data on laptop
+    - Get onto TP-LINK_74ED WiFi on laptop
+    - Change vicon.launch in vicon_bridge:
+        - datastream_hostport: 192.168.0.100:801
+            - Got IP by opening cmd prompt on VICON PC then doing ipconfig
+    - Run bridge: roslaunch vicon_bridge vicon.launch
+    - Listen on tf: rostopic echo /tf
+

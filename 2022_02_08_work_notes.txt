@@ -1,0 +1,14 @@
+Title: SLAM_toolbox initial testing
+
+- In slam_toolbox pckg, created slam_test.launch
+    - Launch file will call asynch node, URG node, produce static tf for odom-base_footprint and base_footprint-laser. Also calls RVIZ
+    - Saw warning complaining about maximum laser range being incorrect; added parm to correct this
+- Call launch file: roslaunch slam_toolbox slam_test.launch
+    - Noticed map shown in RVIZ is just one LIDAR scan; moving it around doesn't produce any new data
+    - Suspect this is due to odom-base_footprint being static. Maybe slam doesn't get new LIDAR readings if the robot isn't moving?
+- Created odom_pub pckgs for testing
+    - Currently, base_footprint frame moves back and forth along x-axis with respect to odom frame
+- Updated launch file to use odom_pub instead of static tf for odom-base_footprint. Launched updated launch file
+    - Map now updates with multiple LIDAR readings
+    - Results look really bad. This is because odom-base_footprint is spoofed; during testing LIDAR isn't actually moving at all. This mismatch causes map to look really bad; this is expected
+- This suggests that once Khepera and server are good to go, then we can feed LIDAR and odom-base_footprint to SLAM toolbox and it should be able to generate map and pose well

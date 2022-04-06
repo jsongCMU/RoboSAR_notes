@@ -1,0 +1,38 @@
+Title: Khepera Sensor Speedup
+
+- Kheperas: reading all sensors including LRF takes around 0.3 seconds, capping our max data freq at around 3 Hz. Can we make this faster?
+- Try to increase baudrate, see if that works:
+    - Current baudrate is minimum, defined on line 41 of kb_lrf.c:
+    #define BAUDRATE 19200 // not used for USB devices
+    - Try setting to max baudrate, 750 kbps
+    #define BAUDRATE 750000
+    - Generate new library code:
+    cd /home/jsonglaptop/khepera4_development/libkhepera-2.1
+    make clean
+    make all
+    - New library file at: build-khepera-3.18.18-custom/lib/libkhepera.so.2.1
+    - Load new library file onto Khepera (192.168.0.108):
+    scp libkhepera.so.2.1 root@192.168.0.108:/usr/lib/
+    - No change in behavior or performance; still get about 0.3 sec
+    - Set baudrate back to default, recompiled, then updated library file on 108. Things should be back to normal now
+- Noticed that kb_lrf uses urg_captureByMD, which powers on laser, gets one reading, then power off laser. I'm going to try using urg_captureByGD instead, which just gets latest reading
+    - kb_lrf.c:
+        - kb_lrf_GetDistances: changed to use urg_captureByGD
+        - make clean; make all; cd build-khepera-3.18.18-custom/lib/
+        - scp libkhepera.so.2.1 root@192.168.0.108:/usr/lib/
+    - Loaded test/sensor_timing onto Khepera
+    - Results look promising; need to see if this is correct:
+    Test duration accel: 6408 us
+    Test duration US   : 2472 us
+    Test duration IR   : 3021 us
+    Test duration gyro : 6378 us
+    Test duration enc  : 1495 us
+    Test duration spd  : 2441 us
+    Test duration LRF  : 63477 us
+    Total (cur): 85692 us
+    Total (min): 82977 us
+    Total (max): 162355 us
+    - rosrun robosar_agent_bringup robosar_agent_bringup_node; looks like scan is publishing at near 10 Hz; RVIZ also looks good
+    - Tried putting old library back on. RVIZ shows LIDAR is less responsive with old code
+    - Pushed new library file to new repo on RoboSAR workspace
+

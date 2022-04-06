@@ -1,0 +1,29 @@
+Title: Multilocalization performance characterization:
+
+- Yesterday got VICON data during testing with 3 robots. Two were spinning in place (so SLAM TOOLBOX would continue to run for those) and one (agent1) was moved around in the environment
+- Edit rosbag: rosbag filter vicon_multiloc_10_rpm.bag edit_vicon_multiloc_10_rpm.bag 'topic == "/robosar_agent_bringup_launch/agent1/feedback/scan" or topic == "/robosar_agent_bringup_launch/agent1/odom_data_euler" or topic == "/trajectory" or  topic == "/tf" and m.transforms[0].header.frame_id != "map" and m.transforms[0].child_frame_id != "agent1/odom"'
+
+Title: Khepera WiFi, IP configuration
+- Configure WiFi connection, edit: /etc/wpa_supplicant/wpa_supplicant-wlan0.conf
+    For reference:
+        ctrl_interface=/var/run/wpa_supplicant
+        ctrl_interface_group=0
+        update_config=1
+        network={
+             ssid="TP-Link_74ED"
+                proto=WPA2
+                key_mgmt=WPA-PSK
+                pairwise=CCMP TKIP
+                group=CCMP TKIP
+                psk="78940758"
+                priority=10
+                scan_ssid=1                                                            
+        }
+- Configure IP, edit: /etc/systemd/network/wifi.network
+    For reference:
+        [Match]
+        Name=wlan0
+        [Network]
+        DNS=192.168.0.1
+        Address=192.168.0.108/24
+

@@ -1,0 +1,16 @@
+Title: Khepera programming research
+
+- Looking into reprogramming Khepera by reading chapter 5 of manual
+    - Will go with light toolchain for now
+    - Says I need "lrzsz"; what is that? Says "Communication package"
+        - X/Y/ZMODEM impelementation, whatever that means
+        - Won't install for now; might need to later
+        - NVM I already have it installed lol
+    - Khepera uses Gumstix Overo FireSTORM-Y COM by default
+        - Guessing this is right FTP: https://ftp.k-team.com/KheperaIV/software/Gumstix%20COM%20Y/
+    - Used script to install light toolchain: poky-glibc-i686-khepera4-image-cortexa8hf-vfp-neon-toolchain-1.8.sh
+        - Installed to ~/khepera4_development/SDK
+        - Script fails; says relocation script fails; /usr/bin/env or something
+        - Kind of worked; "arm-poky-linux-gnueabi-gcc --version" returns valid answer
+        - sourced using: "source /opt/poky/1.8/environment-setup-cortexa8hf-vfp-neon-poky-linux-gnueabi"
+- Look through documentation by opening index.html in doc/html

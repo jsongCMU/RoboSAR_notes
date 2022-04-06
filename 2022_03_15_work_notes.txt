@@ -1,0 +1,25 @@
+Title: Looking into odomTF broadcaster for multi-localization
+
+- Talked with Neel; said it might make sense to do hardcoding for testing with multiple robots for now; see how SLAM toolbox works with multiple robots first before putting in all the work of setting up infrastructure
+- To look for a string in current and sub-directories, use:
+    grep -r "odomTF" *
+- All odom_tf.cpp and odom_tf.hpp do are (1) subscribe to odom_data_euler and then (2) republish data to /tf for /odom -> /baselink
+- In robosar_agent_bringup:
+    - robot_agent.hpp: RobotAgent is created for each agent in the system. Along with robot_id and ip_address, each instance of this class has its own odom_TF_pub object. It also has pointer to ROSFeedbackBridge
+    - robot_agent.cpp:
+        - nh_("~" + robot_id): part of initialization list; this is what makes node exist within agentN domain eg. robosar_agent_bringup_launch/agentN ...
+    - ros_feedback_bridge.hpp: 
+        - ROSFeedbackBridge: 
+            - advertise IMU, odom_data_euler, odom_data_quat, feedback/scan
+            - run odometry node, which publishes odometry topics (odom_data_euler, odom_data_quat)
+            - set up logger; hail our lord
+    - robosar_agent_bringup_node.cpp: Creates instance of ConfigParser
+        - config_parser.hpp: ConfigParser has vector of shared pointers, agents_vec
+        - config_parser.cpp:
+            - ConfigParser::ConfigParser(): Reads config file then calls configSystemInit(config)
+            - ConfigParser::configSystemInit(config): Creates an instance of RobotAgent for each agent in config file, then pushes instance to agents_vec
+- Maybe I can just pass robot_id to odomTF, then inside that node set tf_prefix to be robot_id, then I can achieve the namespacing for the transforms?
+- Modified odom_tf.hpp, odom_tf.cpp, and robot_agent.cpp to create tf_prefix based on robot_id
+- Configured launch file to do localization while using agent1 for tf_prefix; will have to wait until after Wednesday to test this though (due to DoD demo):
+    robosar_multilocalization_1.launch
+

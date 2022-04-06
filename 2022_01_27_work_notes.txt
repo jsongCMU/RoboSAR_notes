@@ -1,0 +1,32 @@
+Title: LRF testing
+
+- LRF module Notes
+    - 0.36 deg resolution, 682 steps = 245.52 deg FOV
+    - 100ms/scan
+    - 20mm - 4m range, 1mm resolution
+        - +/- 30 mm for 20mm~1m
+        - +/- 3% for 20mm-4m
+    - LIDAR
+        - 5 V @ <= 500 mA
+    - Software
+        - klrf_test: test script
+        - int kb_lrf_Init( char *LRF_DeviceName )
+            - argument example: "/dev/ttyACM0"
+- Manual says LRF module should have battery, but don't see it
+- Working on unit 192.168.0.109
+- Compared "ls /dev" before and after plugging in Hokuyo URG via USB
+    - Newly added devices: serial, ttyACM0
+- Unpacking test, 3.3 of LRF manual
+    - SCP klrf_test onto Khepera
+    - Executing ./klrf_test:
+        - lrfinit: successfully detected LIDAR puck on ttyACM0
+        - lrfmeasure 0: successfully visualized shape of wall infront of test area
+        - Outputted LIDAR readings to two files
+    - ls -l in root; looks like files are about 22 kbytes
+        -rw-r--r-- 1 root root  22424 Apr 24 01:07 lrf_test_output.txt
+        -rw-r--r-- 1 root root  22446 Apr 24 01:11 lrf_test_output_2.txt
+- Removed LIDAR puck; installed LRF module
+    - lrfinit: successfully detected LRF module on ttyACM0
+    - lrfmeasure 0: successfully visualized shape of wall infront of test area
+- Out of curiosity plugged in LIDAR puck while LRF module was installed. First device is ttyAMC0, second device is ttyAMC1
+- SCP'd klrf_small_ex and ran it. Works fine.

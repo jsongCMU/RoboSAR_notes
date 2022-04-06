@@ -1,0 +1,137 @@
+Title: Tuning for Scott Hall
+
+- Looking through my notes for tuning; found some interesting posts
+    - https://github.com/SteveMacenski/slam_toolbox/issues/285
+        - "You would try reducing the penalties on changes in orientation and/or position so that if things appear to be a bit off, you're more likely to let it correct there vs try to modify. Something else to aid could be increasing the search space (within reason) but making the scan correlation parameters more strict. That could help let you search more space if you get off a bit from odometry but require a higher burden of proof that there's a quality match."
+    - https://github.com/SteveMacenski/slam_toolbox/issues/334
+        - "We have also that by disabling loop closure, the robot relies on odometry only to localize itself and in this case, we do not have this issue anymore."
+        - "Indeed, during the past months, we had the same issue as the one described here : because Karto through loop closures slightly modify the posegraph which might not be aligned with the one which is uploaded when we launch the localization node. Therefore , the map would get distorded and would not overlap anymore with our static navigation path (with respect to the world/map frame). Because of that, the robot would follow a wrong path in reality while localized in rviz. To temporary solve this, we disabled the map's update (because it was indicated that the update was only for visualization purposes) but did not take into account that the graph was moving as well as the map."
+        - "Huh, that is interesting. Does this result in any worse localization performance? That could be a very real solution to this issue since localization is just a rolling chain of local scans - if you do not see downsides. If you're only keeping some very local set of localization scans, there's no reason to loop close within the localization rolling chain. Loop closure against the localization chain and the base map... I do not believe... has any significant value to the localization mode. You're still scan matching against the map to correct drift and I could potentially see how updating the pose-graph many times and then removing the constraints could push the optimization problem into another local minima, showing "drift". I'm not sure I see any upside of enabling loop closure in localization mode."
+        - "I did try without loop closing in localization mode and I could not notice any shift in the posegraph but the localization was really bad, as if it was completely relying on the odometry and never trying to correct the pose of the robot."
+- I think loop closure is what is causing the robot to jump around, as well as screwing up the map. Did some testing last night, and turning off loop closure prevented these issues. The localization
+  still drifts over time, though, and it doesn't get corrected to the degree I need. Either I can just disable loop closure, or try to get it to work by messing with the matcher settings. I'd say
+  do the latter; if that fails, do the former and see how well that works
+- Params to play with:
+    - minimum_travel_distance - Minimum distance of travel before processing a new scan
+    - minimum_travel_heading - Minimum changing in heading to justify an update
+    - scan_buffer_size - The number of scans to buffer into a chain, also used as the number of scans in the circular buffer of localization mode
+    - scan_buffer_maximum_scan_distance - Maximum distance of a scan from the pose before removing the scan from the buffer
+    - link_match_minimum_response_fine - The threshold link matching algorithm response for fine resolution to pass
+    - link_scan_maximum_distance - Maximum distance between linked scans to be valid
+    - loop_search_maximum_distance - Maximum threshold of distance for scans to be considered for loop closure
+    - do_loop_closing - Whether to do loop closure (if you're not sure, the answer is "true")
+    - correlation_search_space_dimension - Search grid size to do scan correlation over
+    - correlation_search_space_resolution - Search grid resolution to do scan correlation over
+    - loop_search_space_dimension - Size of the search grid over the loop closure algorith
+    - loop_search_space_resolution - Search grid resolution to do loop closure over
+    - distance_variance_penalty - A penalty to apply to a matched scan as it differs from the odometric pose
+    - angle_variance_penalty - A penalty to apply to a matched scan as it differs from the odometric pose
+    - fine_search_angle_offset - Range of angles to test for fine scan matching
+    - coarse_search_angle_offset - Range of angles to test for coarse scan matching
+    - coarse_angle_resolution - Resolution of angles over the Offset range to test in scan matching
+    - minimum_angle_penalty - Smallest penalty an angle can have to ensure the size doesn't blow up
+    - minimum_distance_penalty - Smallest penalty a scan can have to ensure the size doesn't blow up
+    - use_response_expansion - Whether to automatically increase the search grid size if no viable match is found
+- Most promising params to play with:
+    - loop_search_space_dimension - Size of the search grid over the loop closure algorith
+    - distance_variance_penalty - A penalty to apply to a matched scan as it differs from the odometric pose
+    - angle_variance_penalty - A penalty to apply to a matched scan as it differs from the odometric pose
+    - use_response_expansion - Whether to automatically increase the search grid size if no viable match is found
+- By default, loop_search_space_dimension = 8.0. Seems super excessive for our application
+    - Tried setting it to 1.0; looks way better on test4.bag at x4 speed
+    - Tried setting minimum_travel_distance to 0.25; disaster; resetting
+        - Tried 1.0; not much better or worse; resetting
+    - Tried setting scan_buffer_size to 1; not much change
+        - Tried setting it to 10; looks worse; resetting
+    * Tried setting loop_search_space_dimension: 0.5, loop_search_space_resolution: 0.01; looks much better!
+- Resetting all to default; going to try to mess with penaltieis
+    - Decreased penalities; no improvement or worse
+    - Increased penaltieis: distance_variance_penalty: 1.0, angle_variance_penalty: 2.0; seemed to improve until map got messed up
+        * Tried setting loop_search_space_dimension: 1.0; looks much better!
+- Reset to default. Messing with link_match_minimum_response_fine
+    * Increased link_match_minimum_response_fine: 0.5; matching works much better now, but jumps still happen
+    - Tried raising it to 1.0; not much better or worse. Restoring to 0.5
+    * loop_search_space_dimension: 1.0; look very good!
+    - Tried raising link_match_minimum_response_fine: 1.0 with loop_search_space_dimension: 1.0; looked good at first, but then fail apart
+    - Other values above 0.5 give degraded performance
+- Reset to default. Messing with link_scan_maximum_distance
+    - Decreased to 1.0; looked at first, but then got messed up when in left room
+- Reset to default. Messing with use_response_expansion
+    - Set to false. Not much change in behavior.
+- Summary:
+    - Reduce loop_search_space_dimension
+    - Reduce loop_search_space_resolution
+    - Increase penalties
+    - Increase link_match_minimum_response_fine
+- Tuned, and it localizes well
+- Used tuned params to generate cleaner, more accurate map. Should also help with localization
+
+
+APPENDIX:
+- Default params:
+    # Plugin params
+    solver_plugin: solver_plugins::CeresSolver
+    ceres_linear_solver: SPARSE_NORMAL_CHOLESKY
+    ceres_preconditioner: SCHUR_JACOBI
+    ceres_trust_strategy: LEVENBERG_MARQUARDT
+    ceres_dogleg_type: TRADITIONAL_DOGLEG
+    ceres_loss_function: None
+
+    # ROS Parameters
+    map_frame: map
+    odom_frame: agent1/odom
+    base_frame: agent1/base_link
+    scan_topic: /robosar_agent_bringup_launch/agent1/feedback/scan
+    mode: localization
+
+    # if you'd like to start localizing on bringup in a map and pose
+    map_file_name: scott_test_PR4
+    map_start_pose: [0,0,0]
+
+    debug_logging: false
+    throttle_scans: 1
+    transform_publish_period: 0.02 #if 0 never publishes odometry
+    map_update_interval: 5.0
+    resolution: 0.05
+    max_laser_range: 20.0 #for rastering images
+    minimum_time_interval: 0.5
+    transform_timeout: 0.2
+    tf_buffer_duration: 30.
+    stack_size_to_use: 40000000 #// program needs a larger stack size to serialize large maps
+
+    # General Parameters
+    use_scan_matching: true
+    use_scan_barycenter: true
+    minimum_travel_distance: 0.5
+    minimum_travel_heading: 0.5
+    scan_buffer_size: 3
+    scan_buffer_maximum_scan_distance: 10
+    link_match_minimum_response_fine: 0.1  
+    link_scan_maximum_distance: 1.5
+    do_loop_closing: true 
+    loop_match_minimum_chain_size: 3
+    loop_match_maximum_variance_coarse: 3.0  
+    loop_match_minimum_response_coarse: 0.35    
+    loop_match_minimum_response_fine: 0.45
+
+    # Correlation Parameters - Correlation Parameters
+    correlation_search_space_dimension: 0.5
+    correlation_search_space_resolution: 0.01
+    correlation_search_space_smear_deviation: 0.1 
+
+    # Correlation Parameters - Loop Closure Parameters
+    loop_search_space_dimension: 8.0
+    loop_search_space_resolution: 0.05
+    loop_search_space_smear_deviation: 0.03
+    loop_search_maximum_distance: 5.0
+
+    # Scan Matcher Parameters
+    distance_variance_penalty: 0.5      
+    angle_variance_penalty: 1.0    
+
+    fine_search_angle_offset: 0.00349     
+    coarse_search_angle_offset: 0.349   
+    coarse_angle_resolution: 0.0349        
+    minimum_angle_penalty: 0.9
+    minimum_distance_penalty: 0.5
+    use_response_expansion: true

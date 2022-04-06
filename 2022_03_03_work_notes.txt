@@ -1,0 +1,40 @@
+Title: Multi-robot localization research
+
+- SLAM_Toolbox is setup for one robot; need to make it scalable for multiple robots
+- Probably the easiest way to do that is to use namespaces. You can specify namespace using "ns" in launchfile; eg:
+    <node name="listener1" pkg="rospy_tutorials" type="listener.py" ns="foo"/>
+  This makes all subscripts and topics for this node limited to the specified namespace
+- Transforms do not use namespaces; a node publishing "base_link->odom" will still publish that transform for those frames, regardless of namespace
+    - TF handles "namespaces" using tf_prefix: https://wiki.ros.org/tf/FAQ#What_is_the_purpose_of_tf_prefix.3F
+    - Relevant forum post: https://answers.ros.org/question/43145/tf-namespace-resolution/
+    - Use rosparam to set prefix, eg:
+        <node shit>
+            <rosparam>
+                tf_prefix: poop
+            </rosparam>
+        </node>
+    - Hard to test how this works; RVIZ doesn't seem to care about prefix. Might have to write some custom code for testing
+- SLAM toolbox:
+    - One subscription for laserscan
+    - Looks for map, odom and base_frame in /tf
+    - eg from YAML file:
+        odom_frame: odom
+        map_frame: map
+        base_frame: base_link
+        scan_topic: /robosar_agent_bringup_launch/agent1/feedback/scan
+- For 4 robots, we should have the following:
+    - Laser scan topics:
+        /robosar_agent_bringup_launch/agent1/feedback/scan
+        /robosar_agent_bringup_launch/agent2/feedback/scan
+        /robosar_agent_bringup_launch/agent3/feedback/scan
+        /robosar_agent_bringup_launch/agent4/feedback/scan
+    - Following input transforms:
+        /agent1/base_link -> /agent1/odom
+        /agent2/base_link -> /agent2/odom
+        /agent3/base_link -> /agent3/odom
+        /agent4/base_link -> /agent4/odom
+    - Following output transforms:
+        /agent1/odom -> map
+        /agent2/odom -> map
+        /agent3/odom -> map
+        /agent4/odom -> map
