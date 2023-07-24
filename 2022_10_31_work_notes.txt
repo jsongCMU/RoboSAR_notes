@@ -1,0 +1,29 @@
+Title: SLAM Toolbox Thread Analysis
+
+Thread0: slam_toolbox_sync_node.cpp
+- Constructs SynchronousSlamToolbox instance
+- ros::spin(), handles callbacks
+Thread1: slam_toolbox_sync.cpp
+- SynchronousSlamToolbox::run
+Thread2: slam_toolbox_common.cpp
+- SlamToolbox::publishTransformLoop
+Thread3: slam_toolbox_common.cpp
+- SlamToolbox::publishVisualizations
+
+Thread analysis:
+- Thread0, Thread1 both access:
+    * q_; laserCallback modifies it in Thread0, and run reads/modifies it in Thread1; no mutex
+- Thread1, Thread2 both access:
+    - map_to_odom_, map_to_odom_child_frame_id_; properly mutex protected via map_to_odom_mutex_
+- Thread0, Thread1 both access:
+    - agent_apriltags_q_m_; properly protected via apriltag_q_mutex_
+- Thread1, Thread2 both access:
+    * m_apriltag_to_scan_; improperly protected (publishTransformLoop has unrestricted access); multiple mutexes (apriltag_mutex_ vs map_to_tags_mutex_?)
+- Thread0, Thread3 both access:
+    - map_; improperly protected (mapCallback access map_.map.info.width and height); mapCallback is for service we never call, so not an issue
+        - Probably just move scoped_lock to before if statement in mapCallback?
+- Thread1, Thread3 both access:
+    * smapper_->getMapper(); no mutex
+        - This PR in SLAM Toolbox adds smapper_mutex_ scoped_lock in publishVisualizations (https://github.com/SteveMacenski/slam_toolbox/commit/c5e4d13087a38d0130ddd3caf2a4f87127d0741a)
+
+PS: Happy Halloween!!!

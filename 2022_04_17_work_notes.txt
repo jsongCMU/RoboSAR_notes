@@ -1,0 +1,8 @@
+Title: Protobuff:
+- Modify .options and .proto as necessary
+- Compilation:
+    - cd ~/catkin_ws/src/robosar_messages/proto
+    - protoc -o robosar.pb robosar.proto
+    - python /home/jsonglaptop/catkin_ws/src/robosar_khepera_code/nanopb/generator/nanopb_generator.py robosar.pb
+    - # Copy .c and .h into ./include/c directory
+    - protoc --cpp_out=./include/cpp robosar.proto

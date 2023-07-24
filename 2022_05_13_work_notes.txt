@@ -1,0 +1,30 @@
+Title: SLAM Toolbox Code Dive
+
+slam_toolbox_sync_node.cpp
+- Creates SynchronousSlamToolbox node
+
+slam_toolbox_sync.hpp
+- Defines SynchronousSlamToolbox class, which hs constructor, destructor, run, and callbacks
+
+slam_toolbox_sync.cpp
+- Constructor: advertise service, pushes back run() to threads_, loads pose graph (deserialize saved map)
+- run():
+    - std::queue<PosedScan> q_, PosedScan is object containing a scan pointer and a position (sensor_msgs::LaserScan::ConstPtr scan; karto::Pose2 pose; [karto::Pose2 is x,y position and heading])
+    - If q_ isn't empty and code is enabled, call addScan (from slam_toolbox_localization.cpp)
+- laserCallback():
+    - Get pose from odometry, gets LaserRangeFinder, push to q_ if data is valid
+
+slam_toolbox_localization.cpp
+- addScan:
+    - "LocalizedRangeScan contains range data from a single sweep of a laser range finder sensor in a two-dimensional space and position information. The odometer position is the position reported by the robot when the range data was recorded. The corrected position is the position calculated by the mapper (or localizer)"
+
+Mapper.h
+- class LinkInfo : public EdgeLabel // A LinkInfo object contains the requisite information for the "spring" that links two scans together--the pose difference and the uncertainty (represented by a covariance matrix).
+- class KARTO_EXPORT MapperGraph : public Graph<LocalizedRangeScan> // Graph for graph SLAM algorithm
+- class KARTO_EXPORT ScanMatcher // Scan matcher
+- class ScanSolver // Graph optimization algorithm
+- class CorrelationGrid : public Grid<kt_int8u> // Implementation of a correlation grid used for scan matching
+
+get_pose_helper.hpp
+- class GetPoseHelper
+    - getOdomPose: gets odom->base_frame TF in karto::Pose2; function called by laserCallback

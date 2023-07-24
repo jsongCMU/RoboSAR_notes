@@ -1,0 +1,7 @@
+Title: Installing SLAM_toolbox
+
+- Installing SLAM_toolbox
+    - In ~/catkin_ws/src: git clone https://github.com/SteveMacenski/slam_toolbox.git -b noetic-devel
+    - In ~/catkin_ws: rosdep install -q -y -r --from-paths src --ignore-src
+    - In ~/catkin_ws: catkin_make
+

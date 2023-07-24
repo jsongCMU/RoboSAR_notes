@@ -1,0 +1,29 @@
+Meetings on Friday's; Katia won't be very happy about that
+Reply to Slack! Rude to leave Jaskaran on read
+Need people to convert Python to C++, and to use Kbot packages
+
+
+rosrun khepera_communicator K4_Send_Cmd.py
+- wait until LED turngs green after turning on Kbot
+- Type in last 3 digits of IP address
+- WiFi network has to TPlink_74ED (pwd: Jaskaran will send later)
+- Successfull connection will spam 'started false\ntc\n'
+
+inside K4_Send_Cmd.py
+- host_ip: ip address of host computer (WiFi settings on computer, get IP address)
+- serverSock.bind; 2000 is a hacky thing?
+- Direct low level control; angular & linear velocity directly (rad/sec, mm/sec)
+- callback probably isn't being called (no print statement)
+- timer_callback is gettingcalled...
+
+ssh root@192.168.0.109 # ssh into robot
+rosrun khepera_communicator Central_Algorithm_Template_Without_Vicon_Input.py
+Neel got callback to work, but no robot movement
+timer callback doesn't get called with Neel's fix
+Need to review code more thoroughly
+
+Neel will create GitHub workspace, Jaskaran will post code
+
+Next meeting on Friday
+
+SCS register equipment - register laptops

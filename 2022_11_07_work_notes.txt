@@ -1,0 +1,25 @@
+Title: Loop closure tuning
+
+- Noticed that loop closure is bad when working with two agents:
+    - Testing in Tepper hall
+    - agent1 goes sideways to changing rooms
+    - agent2 goes down first hallway, then comes back on second hallway
+    - agent2, even if state estimate is accurate, becomes wrong due to multi-agent loop closure
+- Failure doesn't always occur; why?
+- Thought increasing smear from 0.05 to 0.1 helped, but still have issues
+- Didn't observe these issues during testing with single agent, could be due to insufficient testing, or problem is specific to multi-agent
+- Noticed node doesn't always get created at starting positions for all agents during IRL testing. Could be related?
+    - Determine if missing first node occurs every time, or sometimes, or rarely; how frequently does this occur? Deterministic?
+    - Maybe no constraint is set for first nodes, since first nodes aren't well defined
+    - During multi-agent loop closure, first nodes are moved, so map gets messed up?
+    - This issue may be exacerbated by allowing agents to start further apart; nodes will be moved more
+    - Remember seeing red square with diagonals connected for four agent testing; maybe nodes are created for four agents? Why not two?
+        - If problem doesn't occur for four agents, would explain why we didn't see this problem sooner
+        - Also, when testing with four agents, using someone else's computer. Here, agent_bringup_node is run in separate launch file or terminal. That could affect whether this issue occurs or not. Maybe starting bringup node and slam toolbox separately prevents this issue? If so, it could be a timing issue eg. slam_toolbox begins running before agent bringup node is ready. Also sim has different setup for bringup messages; that could explain why sim doesn't have this issue
+    - Note: missing first nodes never occurs in simulation
+* See if this problem occurs with single agent. Send agent sideways, back, then go through hallways 1 and 2; see if same error occurs
+* Test startup with two agents. How often is first node missing? If first node(s) is missing, does bad loop closure occur? If first nodes are present, is loop closure good?
+- Testing:
+    * Problem still occurs with single agent loop closure
+    * Problem still occurs if agent_bringup_node is run first, then slam_toolbox is run after all agents are fully online
+    - First nodes always seem to be missing (in actuallity they're on top of each other) but doesn't seem to be the cause of issues

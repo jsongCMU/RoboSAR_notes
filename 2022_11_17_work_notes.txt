@@ -1,0 +1,50 @@
+Title: Loop closure test
+
+Parmas: 0.8/0.85
+
+Log#1:
+[RoboSAR:Mapper:TryCloseLoop] Loop closure candidate passed coarse response threshold (response = 0.941745)
+[RoboSAR:Mapper:TryCloseLoop] Loop closure candidate PASSED fine response threshold; accepted (response = 0.995528)
+
+[RoboSAR:Mapper:TryCloseLoop] Loop closure candidate passed coarse response threshold (response = 0.874853)
+[RoboSAR:Mapper:TryCloseLoop] Loop closure candidate PASSED fine response threshold; accepted (response = 0.940543)
+
+***\/ VERY BAD LOOP CLOSURE \/ ***
+[RoboSAR:Mapper:TryCloseLoop] Loop closure candidate passed coarse response threshold (response = 0.950909)
+[RoboSAR:Mapper:TryCloseLoop] Loop closure candidate PASSED fine response threshold; accepted (response = 0.993592)
+***/\ VERY BAD LOOP CLOSURE /\***
+
+[RoboSAR:Mapper:TryCloseLoop] Loop closure candidate passed coarse response threshold (response = 0.890718)
+[RoboSAR:Mapper:TryCloseLoop] Loop closure candidate PASSED fine response threshold; accepted (response = 0.975425)
+
+[RoboSAR:Mapper:TryCloseLoop] Loop closure candidate passed coarse response threshold (response = 0.921613)
+[RoboSAR:Mapper:TryCloseLoop] Loop closure candidate PASSED fine response threshold; accepted (response = 0.982478)
+
+Notes: bad loop closure happened in featureless hallway. Perfect match. Can't prevent this, so added features; will test again
+
+Log#2:
+[RoboSAR:Mapper:TryCloseLoop] Loop closure candidate passed coarse response threshold (response = 0.912126)
+[RoboSAR:Mapper:TryCloseLoop] Loop closure candidate PASSED fine response threshold; accepted (response = 0.954868)
+
+[RoboSAR:Mapper:TryCloseLoop] Loop closure candidate passed coarse response threshold (response = 0.914106)
+[RoboSAR:Mapper:TryCloseLoop] Loop closure candidate PASSED fine response threshold; accepted (response = 0.986848)
+
+[RoboSAR:Mapper:TryCloseLoop] Loop closure candidate passed coarse response threshold (response = 0.839751)
+[RoboSAR:Mapper:TryCloseLoop] Loop closure candidate PASSED fine response threshold; accepted (response = 0.98173)
+
+[RoboSAR:Mapper:TryCloseLoop] Loop closure candidate passed coarse response threshold (response = 0.902683)
+[RoboSAR:Mapper:TryCloseLoop] Loop closure candidate PASSED fine response threshold; accepted (response = 0.985924)
+
+[RoboSAR:Mapper:TryCloseLoop] Loop closure candidate passed coarse response threshold (response = 0.862786)
+[RoboSAR:Mapper:TryCloseLoop] Loop closure candidate PASSED fine response threshold; accepted (response = 0.94151)
+
+[RoboSAR:Mapper:TryCloseLoop] Loop closure candidate passed coarse response threshold (response = 0.845865)
+[RoboSAR:Mapper:TryCloseLoop] Loop closure candidate PASSED fine response threshold; accepted (response = 0.910249)
+
+[RoboSAR:Mapper:TryCloseLoop] Loop closure candidate passed coarse response threshold (response = 0.879164)
+[RoboSAR:Mapper:TryCloseLoop] Loop closure candidate PASSED fine response threshold; accepted (response = 0.969164)
+
+[RoboSAR:Mapper:TryCloseLoop] Loop closure candidate passed coarse response threshold (response = 0.83437)
+[RoboSAR:Mapper:TryCloseLoop] Loop closure candidate PASSED fine response threshold; accepted (response = 0.887141)
+
+Notes: All loop closures were good

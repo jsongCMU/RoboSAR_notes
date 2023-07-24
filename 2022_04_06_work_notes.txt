@@ -1,0 +1,7 @@
+Title: PCB Assignment :(
+
+- Programmed Arduino Micro to blink and print messages at 9600 baud rate
+- Plugged it into Khepera; shows up as ttyACM0
+    - Used minicom; can read Arduino outputs
+- Soldered and tested PCB; properly assebled and works
+- Gave PCB to Neel for Arduino programming

@@ -1,0 +1,28 @@
+- Example apriltag detection message:
+### START EXAMPLE ###
+rostopic pub /robosar_agent_bringup_node/agent_1/feedback/apriltag apriltag_ros/AprilTagDetectionArray "header:
+  seq: 0
+  stamp:
+    secs: 0
+    nsecs: 0
+  frame_id: 'agent1/base_link'
+detections:
+- id:
+  - 1
+  size:
+  - 0
+  pose:
+    header:
+      seq: 0
+      stamp:
+        secs: 0
+        nsecs: 0
+      frame_id: ''
+    pose:
+      pose:
+        position: {x: 0.0, y: 0.0, z: 1.0}
+        orientation: {x: 0.0, y: 0.0, z: 0.0, w: 0.0}
+      covariance: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]"
+### END EXAMPLE ###

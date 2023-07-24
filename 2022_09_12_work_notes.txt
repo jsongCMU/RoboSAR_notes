@@ -1,0 +1,44 @@
+Title: Streaming Video from Khepera
+
+- To take image, on khepera run:
+    media-pipes.sh
+    media-formats.sh 752 480
+    v4l2grab -d /dev/video6 -o image.jpg -W 752 -H 480 -q 85 -I -1
+- Transfer with scp:
+    scp image.jpg jsonglaptop@192.168.2.103:/home/jsonglaptop/Desktop/temp
+- To take video, on khepera run:
+    gst-launch -e v4l2src device=/dev/video6 ! video/x-raw-yuv,framerate=20/1 ! autoconvert ! jpegenc ! avimux ! filesink location=video.avi
+- Message looks like it failed, but still produces valid video
+    *** FROM TERMINAL ***
+        root@khepera4_1422:~# gst-launch -e v4l2src device=/dev/video6 ! video/x-raw-yuv,framerate=20/1 ! autoconvert ! jpegenc ! avimux ! filesink location=video.avi
+        Setting pipeline to PAUSED ...
+        Pipeline is live and does not need PREROLL ...
+        WARNING: from element /GstPipeline:pipeline0/GstV4l2Src:v4l2src0: Could not get parameters on device '/dev/video6'
+        Additional debug info:
+        /home/gumstix/Buildbot/yocto-pepper-master/build/build/tmp/work/cortexa8hf-vfp-neon-poky-linux-gnueabi/gst-plugins-good/0.10.31-r8/gst-plugins-good-0.10.31/sys/v4l2/v4l2src_calls.c(235): gst_v4l2src_set_capture (): /GstPipeline:pipeline0/GstV4l2Src:v4l2src0:
+        system error: Invalid argument
+        Setting pipeline to PLAYING ...
+        New clock: GstSystemClock
+        ^C
+        Caught interrupt -- handling interrupt.
+        Interrupt: Stopping pipeline ...
+
+        (gst-launch-0.10:1997): GLib-CRITICAL **: Source ID 56 was not found when attempting to remove it
+        EOS on shutdown enabled -- Forcing EOS on the pipeline
+        Waiting for EOS...
+        Got EOS from element "pipeline0".
+        EOS received - stopping pipeline...
+        Execution ended after 8568115239 ns.
+        Setting pipeline to PAUSED ...
+        Setting pipeline to READY ...
+        Setting pipeline to NULL ...
+        Freeing pipeline ...
+    *** END FROM TERMINAL ***
+- Transfer with scp:
+    scp video.avi jsonglaptop@192.168.2.103:/home/jsonglaptop/Desktop/temp
+- Streaming (jpeg):
+    media-pipes.sh
+    media-formats.sh 752 480
+    gst-launch -e v4l2src device=/dev/video6 ! video/x-raw-yuv, framerate=20/1 ! autoconvert ! jpegenc ! multipartmux ! tcpserversink port=5000
+- To visualize, on laptop open VLC > Media > Open Network Stream. In URL, enter robot IP & port eg:
+    tcp://192.168.2.115:5000

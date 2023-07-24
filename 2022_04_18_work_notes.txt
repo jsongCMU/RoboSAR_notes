@@ -1,0 +1,20 @@
+Title: Trouble in Little Localization
+
+- Localization seemd to work well couple days ago; now its shitting the bed
+- Tried driving the agents around in circles near the starting point repeatedly
+    - 111,112 diverged after 4 or 5 laps
+    - 108, 109, 110 did not diverge
+- Seems like 111 and 112 can't be trusted; they're much wobblier than the others, maybe that's the issue
+- Testing with 108, 109, 110 to see what's going on
+    - 109 did great; very good localization, even with office door closed in SVD map
+    - 110 was doing well; it then failed. Noticed movement was odd; upon inspection, noticed 110 had rust
+      on caster balls (front and back)
+    - 108 did poorly; see ~/catkin_ws/bags/svd/108 bag files. Strange noises from 108, suspect caster balls;
+      and it got stuck on nothing at one point; couldn't even feel a bump or crack in the least with my hands 
+      upon inspection.
+      - test1.bag: looses loc pretty early
+      - test2.bag: loses loc after doing well at start
+      - test3.bag: loc pretty bad at 28s; jump at 34s; worse at 65s
+      - test4.bag: loc pretty good until it gets near closed office door at 258s; recovers near end of run at 294s
+- Suspect mechanical or robot defects causing issues. Asked Jaskaran to open up all the agents we have tomorrow
+  morning; I can cherry-pick robots for SVD. Once I do, I can see if this fixes issue

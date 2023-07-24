@@ -1,0 +1,11 @@
+Title: Reset Odom feature
+
+- Structure of the code: 
+    - robosar_agent_bringup_node
+        - ConfigParser: std::vector<std::shared_ptr<RobotAgent>> agents_vec
+            - RobotAgent: std::shared_ptr<ROSFeedbackBridge> bridgePtr;
+                - ROSFeedbackBridge: OdomNode odom_node_;
+- Plan:
+    - Add odom reset to OdomNode, RobotAgnet ConfigParser
+- Done. Tested and works; base_link becomes aligned to odom.
+    - SLAM_toolbox sees this as motion and updates, changing the map to odom TF; may be a problem. Still, my code works, so will push and PR

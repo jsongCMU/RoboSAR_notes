@@ -1,0 +1,13 @@
+Title: Intial Scan Matcher
+- Sequential scan matcher is set up in Mapper.cpp, under Initialize:
+m_pSequentialScanMatcher = ScanMatcher::Create(this,
+      m_pCorrelationSearchSpaceDimension->GetValue(),
+      m_pCorrelationSearchSpaceResolution->GetValue(),
+      m_pCorrelationSearchSpaceSmearDeviation->GetValue(),
+      rangeThreshold);
+      - Initialize is called near start of Process in Mapper.cpp
+- Special case of first scan from a sensor is handled in Mapper.cpp, under AddEdges:
+kt_double response = m_pMapper->m_pSequentialScanMatcher->MatchScan<LocalizedRangeScanMap>(pScan,
+                                                          pSensorManager->GetScans(rCandidateSensorName),
+                                                          bestPose, covariance);
+
